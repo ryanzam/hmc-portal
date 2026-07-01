@@ -1,6 +1,15 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 
-export default function Home() {
+export default async function Home() {
+
+  const session = await auth();
+
+  if (session?.user) {
+    redirect((session.user as any).role === "admin" ? "/admin" : "/dashboard");
+  }
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-24 text-center">
       <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">
