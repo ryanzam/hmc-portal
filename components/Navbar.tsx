@@ -21,7 +21,7 @@ export default function Navbar() {
         <nav className="border-b border-slate-200 bg-white">
             <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
                 <Link href={homeHref} className="text-lg font-semibold text-slate-800">
-                    HMC. Portal
+                    HMC. <span className="text-[#d0a43a]">Portal</span>
                 </Link>
 
                 <div className="flex items-center gap-4">
