@@ -41,21 +41,7 @@ const RegisterPage = () => {
                 return;
             }
 
-            const signInRes = await signIn("credentials", {
-                email: form.email,
-                password: form.password,
-                redirect: false,
-            });
-
-            setLoading(false);
-
-            if (signInRes?.error) {
-                router.push("/login");
-                return;
-            }
-
-            router.push("/dashboard");
-            router.refresh();
+            router.push(`/verify-email?email=${encodeURIComponent(form.email)}`);
         } catch {
             setLoading(false);
             setError("Something went wrong. Please try again.");

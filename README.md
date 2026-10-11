@@ -260,3 +260,16 @@ This project is not under any specific open-source license. Use it as you see fi
 ---
 
 
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+## Testing
+Execute the suite actively inside watch mode
+```
+npx vitest
+```
+
+Generate a structural coverage audit dashboard report
+```
+npx vitest run --coverage
+```

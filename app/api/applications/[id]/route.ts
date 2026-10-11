@@ -4,6 +4,7 @@ import Application from "@/models/Application";
 import mongoose from "mongoose";
 import { Address, APPLICATION_STATUSES, SERVICE_TYPES, type ApplicationStatus, type PopulatedUserRef, UploadedFile, ServiceType } from "@/types";
 import connectDB from "@/lib/db";
+import { sendAdminApplicationNotification, sendUserStatusNotification } from "@/lib/email";
 
 interface RouteContext {
     params: Promise<{ id: string }>;
@@ -76,10 +77,24 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
         id,
         { status, adminRemark: adminRemark || "" },
         { new: true }
-    ).populate("userId", "name email");
+    ).populate<{ userId: PopulatedUserRef }>("userId", "name email")
 
     if (!application) {
         return NextResponse.json({ error: "Application not found." }, { status: 404 });
+    }
+
+    const userRef = application.userId as PopulatedUserRef;
+    if (userRef?.email) {
+        sendUserStatusNotification({
+            to: userRef.email,
+            name: userRef.name ?? "Applicant",
+            serviceType: application.serviceType,
+            status,
+            adminRemark: adminRemark || "",
+            applicationId: application._id.toString(),
+        }).catch((err: unknown) => {
+            console.error("[Email] User status notification failed:", err);
+        });
     }
 
     return NextResponse.json({ application });
@@ -147,6 +162,16 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
 
     await existing.save();
     await existing.populate("userId", "name email");
+
+    sendAdminApplicationNotification({
+        applicantName: fullName,
+        applicantEmail: session.user.email ?? "",
+        serviceType,
+        applicationId: existing._id.toString(),
+        action: "updated",
+    }).catch((err: unknown) => {
+        console.error("[Email] Admin notification (update) failed:", err);
+    });
 
     return NextResponse.json({ application: existing });
 }

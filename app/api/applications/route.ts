@@ -10,6 +10,7 @@ import {
     type ApplicationStatus,
 } from "@/types";
 import connectDB from "@/lib/db";
+import { sendAdminApplicationNotification } from "@/lib/email";
 
 interface CreateApplicationBody {
     fullName?: string;
@@ -90,6 +91,16 @@ export async function POST(req: NextRequest) {
             description: description || "",
             files: Array.isArray(files) ? files : [],
             status: "pending",
+        });
+
+        sendAdminApplicationNotification({
+            applicantName: fullName,
+            applicantEmail: session.user.email ?? "",
+            serviceType,
+            applicationId: application._id.toString(),
+            action: "submitted",
+        }).catch((err: unknown) => {
+            console.error("[Email] Admin notification (submit) failed:", err);
         });
 
         return NextResponse.json({ application }, { status: 201 });
